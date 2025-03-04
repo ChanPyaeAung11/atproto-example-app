@@ -1,4 +1,51 @@
 body {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+button:hover {
+  background-color: #45a049;
+}
+h1 {
+  color: #333;
+}
+
+body {
   font-family: Arial, Helvetica, sans-serif;
 
   --border-color: #ddd;
@@ -18,7 +65,9 @@ body {
   Josh's Custom CSS Reset
   https://www.joshwcomeau.com/css/custom-css-reset/
 */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 * {
@@ -28,24 +77,39 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
 }
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
-p, h1, h2, h3, h4, h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
 }
-#root, #__next {
+#root,
+#__next {
   isolation: isolate;
 }
 
 /*
   Common components
 */
-button, .button {
+button,
+.button {
   display: inline-block;
   border: 0;
   background-color: var(--primary-500);
@@ -55,7 +119,8 @@ button, .button {
   cursor: pointer;
   text-decoration: none;
 }
-button:hover, .button:hover {
+button:hover,
+.button:hover {
   background: var(--primary-400);
 }
 
@@ -172,7 +237,7 @@ button:hover, .button:hover {
 }
 
 .status-line:not(.no-line)::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 2px;
   background-color: var(--border-color);

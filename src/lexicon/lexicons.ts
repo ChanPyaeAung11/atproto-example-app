@@ -183,6 +183,64 @@ export const schemaDict = {
       },
     },
   },
+  XyzStatusphereMovie: {
+    lexicon: 1,
+    id: 'xyz.statusphere.movie',
+    description: 'test schema for movie logging',
+    defs: {
+      main: {
+        type: 'record',
+        description: 'A declaration of a movie log',
+        key: 'tid',
+        record: {
+          type: 'object',
+          required: [
+            'name',
+            'rate',
+            'watchedBefore',
+            'liked',
+            'review',
+            'createdAt',
+          ],
+          properties: {
+            name: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 256,
+            },
+            rate: {
+              type: 'string',
+              enum: [
+                '0.5',
+                '1',
+                '1.5',
+                '2',
+                '2.5',
+                '3',
+                '3.5',
+                '4',
+                '4.5',
+                '5',
+              ],
+            },
+            watchedBefore: {
+              type: 'boolean',
+            },
+            liked: {
+              type: 'boolean',
+            },
+            review: {
+              type: 'string',
+            },
+            createdAt: {
+              type: 'string',
+              format: 'datetime',
+            },
+          },
+        },
+      },
+    },
+  },
   AppBskyActorProfile: {
     lexicon: 1,
     id: 'app.bsky.actor.profile',
@@ -290,6 +348,7 @@ export const schemas: LexiconDoc[] = Object.values(schemaDict) as LexiconDoc[]
 export const lexicons: Lexicons = new Lexicons(schemas)
 export const ids = {
   ComAtprotoLabelDefs: 'com.atproto.label.defs',
+  XyzStatusphereMovie: 'xyz.statusphere.movie',
   AppBskyActorProfile: 'app.bsky.actor.profile',
   XyzStatusphereStatus: 'xyz.statusphere.status',
   ComAtprotoRepoStrongRef: 'com.atproto.repo.strongRef',
