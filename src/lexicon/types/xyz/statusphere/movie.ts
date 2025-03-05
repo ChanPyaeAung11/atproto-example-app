@@ -9,6 +9,7 @@ import { CID } from 'multiformats/cid'
 export interface Record {
   name: string
   rate: '0.5' | '1' | '1.5' | '2' | '2.5' | '3' | '3.5' | '4' | '4.5' | '5'
+  poster?: BlobRef
   watchedBefore: boolean
   liked: boolean
   review: string

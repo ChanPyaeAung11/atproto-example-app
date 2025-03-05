@@ -42,6 +42,7 @@ export type Movie = {
   watchedBefore?: number;
   liked?: number;
   review?: string;
+  poster?: string;
   createdAt: string;
   indexedAt: string;
 };
@@ -89,6 +90,7 @@ migrations["001"] = {
       .addColumn("watchedBefore", "integer")
       .addColumn("liked", "integer")
       .addColumn("review", "varchar")
+      .addColumn("poster", "varchar")
       .addColumn("createdAt", "varchar", (col) => col.notNull())
       .addColumn("indexedAt", "varchar", (col) => col.notNull())
       .execute();

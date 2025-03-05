@@ -27,6 +27,11 @@
             "type": "string",
             "enum": ["0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5"]
           },
+          "poster": {
+            "type": "blob",
+            "accept": ["image/png", "image/jpeg", "image/webp"],
+            "maxSize": 1000000
+          },
           "watchedBefore": { "type": "boolean" },
           "liked": { "type": "boolean" },
           "review": { "type": "string" },

@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { OAuthResolverError } from "@atproto/oauth-client-node";
 import { isValidHandle } from "@atproto/syntax";
 import { TID } from "@atproto/common";
-import { Agent } from "@atproto/api";
+import { Agent, BlobRef } from "@atproto/api";
 import express from "express";
 import { getIronSession } from "iron-session";
 import type { AppContext } from "#/index";
@@ -19,6 +19,7 @@ import * as Profile from "#/lexicon/types/app/bsky/actor/profile";
 import * as GetFollows from "@atproto/api/src/client/types/app/bsky/graph/getFollows";
 import { sql } from "kysely";
 import type { Movie as movieType } from "./db";
+import multer from "multer";
 
 type Session = { did: string };
 
@@ -69,6 +70,8 @@ async function getSessionAgent(
     return null;
   }
 }
+// middleware multer for file upload
+const upload = multer();
 
 export const createRouter = (ctx: AppContext) => {
   const router = express.Router();
@@ -137,7 +140,6 @@ export const createRouter = (ctx: AppContext) => {
         const url = await ctx.oauthClient.authorize(handle, {
           scope: "atproto transition:generic",
         });
-
         return res.redirect(url.toString());
       } catch (err) {
         ctx.logger.error({ err }, "oauth authorize failed");
@@ -363,6 +365,7 @@ export const createRouter = (ctx: AppContext) => {
         // Store each valid movie record in the database
         if (movieRecords.success && movieRecords.data.records.length > 0) {
           for (const record of movieRecords.data.records) {
+            console.log(record.uri);
             if (
               Movie.isRecord(record.value) &&
               Movie.validateRecord(record.value).success
@@ -376,6 +379,7 @@ export const createRouter = (ctx: AppContext) => {
                   name: movieData.name,
                   rate: parseFloat(movieData.rate),
                   watchedBefore: movieData.watchedBefore ? 1 : 0,
+                  poster: movieData.poster?.ref.toString(),
                   liked: movieData.liked ? 1 : 0,
                   review: movieData.review,
                   createdAt: movieData.createdAt,
@@ -386,6 +390,7 @@ export const createRouter = (ctx: AppContext) => {
                     name: movieData.name,
                     rate: parseFloat(movieData.rate),
                     watchedBefore: movieData.watchedBefore ? 1 : 0,
+                    poster: movieData.poster?.ref.toString(),
                     liked: movieData.liked ? 1 : 0,
                     review: movieData.review,
                     createdAt: movieData.createdAt,
@@ -416,7 +421,7 @@ export const createRouter = (ctx: AppContext) => {
         .selectAll()
         .orderBy("indexedAt", "asc")
         .execute();
-      console.log(loggedMovies);
+      //console.log(loggedMovies);
 
       // Fetch additional information about the logged-in user
       const profileResponse = await agent.com.atproto.repo
@@ -444,6 +449,7 @@ export const createRouter = (ctx: AppContext) => {
 
   router.post(
     "/movie",
+    upload.single("poster"),
     handler(async (req, res) => {
       // If the user is signed in, get an agent which communicates with their server
       const agent = await getSessionAgent(req, res, ctx);
@@ -454,7 +460,25 @@ export const createRouter = (ctx: AppContext) => {
           .send("<h1>Error: Session required</h1>");
       }
 
-      // Construct & validate their status record
+      let posterBlobRef: BlobRef;
+
+      if (req.file) {
+        try {
+          const upload = await agent.uploadBlob(req.file.buffer, {
+            encoding: req.file.mimetype,
+          });
+          console.log("Raw photo upload:", upload);
+          posterBlobRef = upload.data.blob;
+        } catch (err) {
+          ctx.logger.warn({ err }, "failed to upload poster");
+          return res
+            .status(500)
+            .type("html")
+            .send("<h1>Error : Failed to upload poster</h1>");
+        }
+      }
+      console.log("Poster Blob From ", posterBlobRef);
+      // populating rkey for URI
       let rkey;
       console.log("REQUEST BODY URI : ", req.body.uri);
       if (req.body?.uri) {
@@ -462,13 +486,14 @@ export const createRouter = (ctx: AppContext) => {
       } else {
         rkey = TID.nextStr();
       }
-
+      // Construct & validate their status record
       const record = {
         $type: "xyz.statusphere.movie",
         name: req.body?.name,
         rate: req.body?.rate,
         watchedBefore: req.body?.watchedBefore ? true : false,
         liked: req.body?.liked ? true : false,
+        poster: posterBlobRef,
         review: req.body?.review,
         createdAt: new Date().toISOString(),
       };
@@ -499,6 +524,7 @@ export const createRouter = (ctx: AppContext) => {
           .type("html")
           .send("<h1>Error: Failed to write record</h1>");
       }
+      console.log("Poster in DB", posterBlobRef?.ref.toString());
 
       try {
         // Optimistically update our SQLite
@@ -515,6 +541,7 @@ export const createRouter = (ctx: AppContext) => {
             watchedBefore: record.watchedBefore ? 1 : 0,
             liked: record.liked ? 1 : 0,
             createdAt: record.createdAt,
+            poster: posterBlobRef?.ref.toString(),
             review: record.review,
             indexedAt: new Date().toISOString(),
           })
@@ -528,6 +555,7 @@ export const createRouter = (ctx: AppContext) => {
               liked: record.liked ? 1 : 0,
               review: record.review,
               createdAt: record.createdAt,
+              poster: posterBlobRef?.ref.toString(),
               indexedAt: new Date().toISOString(),
             }),
           )
@@ -540,6 +568,41 @@ export const createRouter = (ctx: AppContext) => {
       }
 
       return res.redirect("/movie");
+    }),
+  );
+
+  router.get(
+    "/blob/:did/:cid",
+    handler(async (req, res) => {
+      // If the user is signed in, get an agent which communicates with their server
+      const agent = await getSessionAgent(req, res, ctx);
+      if (!agent) {
+        return res
+          .status(401)
+          .type("html")
+          .send("<h1>Error: Session required</h1>");
+      }
+
+      try {
+        const response = await agent.api.com.atproto.sync.getBlob({
+          did: req.params.did,
+          cid: req.params.cid,
+        });
+        console.log(response);
+        console.log(response.data);
+        res.type(response.headers["content-type"]);
+        // Convert Uint8Array to Buffer and send
+        const buffer = Buffer.from(response.data);
+
+        // Set proper cache headers if needed
+        res.setHeader("Cache-Control", "public, max-age=31536000");
+
+        // Send the buffer
+        res.end(buffer);
+      } catch (err) {
+        console.error("Failed to get blob:", err);
+        res.status(500).type("html").send("Failed to get image");
+      }
     }),
   );
   return router;

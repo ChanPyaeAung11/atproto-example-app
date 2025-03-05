@@ -223,6 +223,11 @@ export const schemaDict = {
                 '5',
               ],
             },
+            poster: {
+              type: 'blob',
+              accept: ['image/png', 'image/jpeg', 'image/webp'],
+              maxSize: 1000000,
+            },
             watchedBefore: {
               type: 'boolean',
             },

@@ -39,7 +39,12 @@ function content({ profile, loggedMovies, editMovie }: Props) {
             </div>
           </div>`}
     </div>
-    <form id="movieReviewForm" action="/movie" method="post">
+    <form
+      id="movieReviewForm"
+      action="/movie"
+      method="post"
+      enctype="multipart/form-data"
+    >
       <div class="form-group">
         <label for="name">Movie Name:</label>
         <input
@@ -54,7 +59,7 @@ function content({ profile, loggedMovies, editMovie }: Props) {
       <div class="form-group">
         <label for="review">Review:</label>
         <textarea id="review" name="review" required>
-${editMovie ? editMovie.review : ""}</textarea
+                ${editMovie ? editMovie.review : ""}</textarea
         >
       </div>
 
@@ -97,7 +102,15 @@ ${editMovie ? editMovie.review : ""}</textarea
           <label for="liked">Liked</label>
         </div>
       </div>
-
+      <div class="form-group">
+        <label for="poster"> Movie Poster: </label>
+        <input
+          type="file"
+          id="poster"
+          name="poster"
+          accept="image/png, image/jpeg, image/webp"
+        />
+      </div>
       <!-- If editing, include the URI to identify which movie to update -->
       ${editMovie
         ? html`<input
@@ -116,6 +129,16 @@ ${editMovie ? editMovie.review : ""}</textarea
             ${loggedMovies.map((log) => {
               return html`
                 <div class="movie-card">
+                  ${log.poster && log.authorDid
+                    ? (() => {
+                        const imgSrc = `/blob/${log.authorDid}/${log.poster}`;
+                        return html`<img
+                          src="${imgSrc}"
+                          alt="${log.name || "Movie"} poster"
+                          class="movie-poster"
+                        />`;
+                      })()
+                    : ""}
                   <h3>${log.name}</h3>
                   <div class="movie-details">
                     <div class="rating">Rating: ${log.rate || "N/A"}</div>

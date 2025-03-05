@@ -52,6 +52,8 @@ export function createIngester(db: Database, idResolver: IdResolver) {
               rate: parseFloat(record.rate),
               watchedBefore: record.watchedBefore ? 1 : 0,
               liked: record.liked ? 1 : 0,
+              poster: record.poster?.ref.toString(),
+              review: record.review,
               createdAt: record.createdAt,
               indexedAt: new Date().toISOString(),
             })
@@ -63,6 +65,7 @@ export function createIngester(db: Database, idResolver: IdResolver) {
                 rate: parseFloat(record.rate),
                 watchedBefore: record.watchedBefore ? 1 : 0,
                 liked: record.liked ? 1 : 0,
+                poster: record.poster?.ref.toString(),
                 review: record.review,
                 createdAt: record.createdAt,
                 indexedAt: now.toISOString(),
