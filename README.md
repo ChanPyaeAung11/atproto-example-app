@@ -9,6 +9,8 @@ Testing and understanding a portion of AT Protocol
 - Post and Edit movie reviews
 - Upload custom posters (blobs)
 - Delete movie reviews
+- SQLite database is file based so, no need to re log in everytime server restarts
+- [ ] First HTML render after deleting browser cache is not showing "@some1" is feeling "👍" today and showing [object Object] [object Object]. After server restart, it is working fine. not sure what is the issue. HELPPPPP
 
 ## Getting Started
 
