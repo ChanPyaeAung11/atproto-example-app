@@ -210,15 +210,15 @@ export const createRouter = (ctx: AppContext) => {
         .execute();
 
       // Map user DIDs to their domain-name handles
-      // const didHandleMap = await ctx.resolver.resolveDidsToHandles(
-      //   statuses.map((s) => s.authorDid),
-      // );
+      const didHandleMap = await ctx.resolver.resolveDidsToHandles(
+        statuses.map((s) => s.authorDid),
+      );
 
       // Map user DIDs to their displayNames
-      const didDisplayNameMap = await ctx.resolver.resolveDidsToDisplayNames(
-        statuses.map((s) => s.authorDid),
-        agent as Agent,
-      );
+      // const didDisplayNameMap = await ctx.resolver.resolveDidsToDisplayNames(
+      //   statuses.map((s) => s.authorDid),
+      //   agent as Agent,
+      // );
 
       const followResponse = await agent?.getFollows({
         actor: agent.assertDid,
@@ -267,7 +267,7 @@ export const createRouter = (ctx: AppContext) => {
             statuses,
             statusesCount,
             followStatus,
-            didDisplayNameMap,
+            didHandleMap,
             profile,
             myStatus,
           }),
