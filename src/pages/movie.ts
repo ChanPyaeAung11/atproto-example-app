@@ -163,6 +163,25 @@ function content({ profile, loggedMovies, editMovie }: Props) {
                         />
                         <button type="submit" class="link-button">Edit</button>
                       </form>
+                      <!-- Use a DELETE form with the URI as a query parameter -->
+                      <form
+                        action="/movie/delete"
+                        method="post"
+                        class="inline-form"
+                      >
+                        <input
+                          type="hidden"
+                          name="uri"
+                          value="${log.uri || ""}"
+                        />
+                        <button
+                          type="submit"
+                          class="link-button delete-button"
+                          onclick="return confirm('Are you sure you want to delete this movie record?')"
+                        >
+                          Delete
+                        </button>
+                      </form>
                     </div>
                   </div>
                 </div>

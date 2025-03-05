@@ -61,6 +61,37 @@ h1 {
   border-radius: 8px;
   margin-bottom: 1rem;
 }
+
+.movie-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.inline-form {
+  display: inline;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--primary-500);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-button:hover {
+  color: var(--primary-600);
+}
+
+.delete-button {
+  color: var(--error-500);
+}
+
+.delete-button:hover {
+  color: darkred;
+}
 body {
   font-family: Arial, Helvetica, sans-serif;
 

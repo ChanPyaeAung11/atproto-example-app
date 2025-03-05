@@ -63,6 +63,7 @@ async function getSessionAgent(
     // SessionStore using DID as key
     const oauthSession = await ctx.oauthClient.restore(session.did);
     // create AtProto Agent to interact with PDS
+    // agent is just an object that holds the OAuth tokens and provides methods to make authenticated API calls to PDS
     return oauthSession ? new Agent(oauthSession) : null;
   } catch (err) {
     ctx.logger.warn({ err }, "oauth restore failed");
@@ -365,7 +366,7 @@ export const createRouter = (ctx: AppContext) => {
         // Store each valid movie record in the database
         if (movieRecords.success && movieRecords.data.records.length > 0) {
           for (const record of movieRecords.data.records) {
-            console.log(record.uri);
+            //console.log(record.uri);
             if (
               Movie.isRecord(record.value) &&
               Movie.validateRecord(record.value).success
@@ -603,6 +604,55 @@ export const createRouter = (ctx: AppContext) => {
         console.error("Failed to get blob:", err);
         res.status(500).type("html").send("Failed to get image");
       }
+    }),
+  );
+
+  router.post(
+    "/movie/delete",
+    handler(async (req, res) => {
+      // If the user is signed in, get an agent which communicates with their server
+      const agent = await getSessionAgent(req, res, ctx);
+      if (!agent) {
+        return res
+          .status(401)
+          .type("html")
+          .send("<h1>Error: Session required</h1>");
+      }
+      console.log("delete request is in");
+      let uri;
+      if (req.body?.uri) {
+        uri = req.body.uri;
+      } else {
+        return res.status(400).type("html").send("<h1>Error: Invalid URI</h1>");
+      }
+      console.log("uri is ", uri);
+      try {
+        // Delete the movie record from the user's repository
+        const res = await agent.com.atproto.repo.deleteRecord({
+          repo: agent.assertDid,
+          collection: "xyz.statusphere.movie",
+          rkey: uri.split("/").pop(),
+        });
+        console.log("response from deleteRecord() is ", res);
+      } catch (err) {
+        ctx.logger.warn({ err }, "failed to delete record");
+        return res
+          .status(500)
+          .type("html")
+          .send("<h1>Error: Failed to Delete Record</h1>");
+      }
+
+      // delete the record from the database
+      try {
+        await ctx.db.deleteFrom("movie").where("uri", "=", uri).execute();
+      } catch (err) {
+        ctx.logger.warn(
+          { err },
+          "failed to delete record from database ; ignoring as it should be caught by the firehose",
+        );
+      }
+
+      return res.redirect("/movie");
     }),
   );
   return router;
