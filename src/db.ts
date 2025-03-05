@@ -74,6 +74,7 @@ migrations["001"] = {
     await db.schema
       .createTable("auth_session")
       .addColumn("key", "varchar", (col) => col.primaryKey())
+      // JSON string that  contains access, refresh tokens, did and handle
       .addColumn("session", "varchar", (col) => col.notNull())
       .execute();
     await db.schema

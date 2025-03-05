@@ -57,10 +57,12 @@ async function getSessionAgent(
     cookieName: "sid",
     password: env.COOKIE_SECRET,
   });
+  console.log("Session from req:", session);
   if (!session.did) return null;
   try {
     // retrieve the Atproto tokens (access token and refresh token) from
-    // SessionStore using DID as key
+    // SessionStore (auth_session) using DID as key
+    // adding new cmt to see things
     const oauthSession = await ctx.oauthClient.restore(session.did);
     // create AtProto Agent to interact with PDS
     // agent is just an object that holds the OAuth tokens and provides methods to make authenticated API calls to PDS
@@ -98,7 +100,7 @@ export const createRouter = (ctx: AppContext) => {
       const params = new URLSearchParams(req.originalUrl.split("?")[1]);
       try {
         // Exchanging auth code for tokens (PDS-App Interaction)
-        // also checks the state value for CSRF verification
+        // uses auth_state to verify the state parameter and auth_session to store the OAuth tokens
         // plain JS object that contains DID and Handle. not the actual tokens.
         const { session } = await ctx.oauthClient.callback(params);
         // Create or retrieve iron-session (secure cookie)
@@ -137,7 +139,7 @@ export const createRouter = (ctx: AppContext) => {
 
       // Initiate the OAuth flow
       try {
-        // a random state is generated here
+        // a random state is generated here and is stored in auth_state table
         const url = await ctx.oauthClient.authorize(handle, {
           scope: "atproto transition:generic",
         });
